@@ -22,7 +22,7 @@ import base64 as b64
 import numbers
 from six import string_types
 from six import BytesIO
-
+import plotly.figure_factory as ff
 
 def isstr(s):
     return isinstance(s, string_types)
@@ -62,7 +62,13 @@ def _scrub_dict(d):
 
 def _axisformat(x, opts):
     fields = ['type', 'tick', 'label', 'tickvals', 'ticklabels', 'tickmin', 'tickmax']
-    if any([opts.get(x + i) for i in fields]):
+
+    #print(x,opts)
+    if opts.get(x + 'axis'):
+        ax = opts.get(x+'axis')
+        print(ax)
+        return ax
+    elif any([opts.get(x + i) for i in fields]):
         return {
             'type': opts.get(x + 'type'),
             'title': opts.get(x + 'label'),
@@ -71,18 +77,20 @@ def _axisformat(x, opts):
             'tickvals': opts.get(x + 'tickvals'),
             'ticktext': opts.get(x + 'ticklabels'),
             'tickwidth': opts.get(x + 'tickstep'),
-            'showticklabels': opts.get(x + 'ytick'),
+            'showticklabels': opts.get(x + 'tick'),
         }
 
 
-def _opts2layout(opts, is3d=False):
+def _opts2layout(opts, is3d=False,noScrub=False):
     layout = {
+        'size': opts.get('size'),
         'width': opts.get('width'),
         'height': opts.get('height'),
         'showlegend': opts.get('legend', False),
         'title': opts.get('title'),
         'xaxis': _axisformat('x', opts),
         'yaxis': _axisformat('y', opts),
+        'annotations': opts.get('annotations'),
         'margin': {
             'l': opts.get('marginleft', 60),
             'r': opts.get('marginright', 60),
@@ -90,13 +98,13 @@ def _opts2layout(opts, is3d=False):
             'b': opts.get('marginbottom', 60),
         }
     }
-
     if is3d:
         layout['zaxis'] = _axisformat('z', opts)
 
     if opts.get('stacked'):
         layout['barmode'] = 'stack' if opts.get('stacked') else 'group'
 
+    if noScrub: return layout
     return _scrub_dict(layout)
 
 
@@ -679,6 +687,66 @@ class Visdom(object):
             'eid': env,
             'layout': _opts2layout(opts)
         })
+
+    def table(self,X, specops={},win=None, env=None, opts={}):
+        """
+        This function draws a heatmap. It takes as input an `NxM` tensor `X`
+        that specifies the value at each location in the heatmap.
+
+        The following `opts` are supported:
+
+        - `opts.colormap`: colormap (`string`; default = `'Viridis'`)
+        - `opts.xmin`    : clip minimum value (`number`; default = `X:min()`)
+        - `opts.xmax`    : clip maximum value (`number`; default = `X:max()`)
+        - `opts.columnnames`: `table` containing x-axis labels
+        - `opts.rownames`: `table` containing y-axis labels
+        """
+
+        """
+        assert X.ndim == 2, 'data should be two-dimensional'
+        opts = {} if opts is None else opts
+        opts['xmin'] = opts.get('xmin', np.asscalar(X.min()))
+        opts['xmax'] = opts.get('xmax', np.asscalar(X.max()))
+        opts['colormap'] = opts.get('colormap', 'Viridis')
+        _assert_opts(opts)
+
+        if opts.get('columnnames') is not None:
+            assert len(opts['columnnames']) == X.shape[1], \
+                'number of column names should match number of columns in X'
+
+        if opts.get('rownames') is not None:
+            assert len(opts['rownames']) == X.shape[0], \
+                'number of row names should match number of rows in X'
+        """
+        index = specops.get('index',False)
+        index_title = specops.get('index_title','')
+        annotation_offset = specops.get('annotation_offset',.45)
+        colorscale = specops.get('colorscale')
+        font_colors = specops.get('font_colors')
+        height_constant = specops.get('height_constant',30)
+        annotations = specops.get('annotations')
+        table = ff.create_table(X,colorscale=colorscale,font_colors=font_colors,index=index,index_title=index_title,annotation_offset=annotation_offset,height_constant=height_constant)
+        data = table['data']
+        lay = table['layout']
+        if annotations:
+            ann_font_size = annotations.get('font_size')
+            ann_align = annotations.get('align','left')
+            ann_show_arrow = annotations.get('showarrow',False)
+
+            for i in range(len(table.layout.annotations)):
+                table.layout.annotations[i].font.size = ann_font_size
+                table.layout.annotations[i].align = ann_align
+                table.layout.annotations[i].showarrow = ann_show_arrow
+
+        for key in lay.keys():
+            opts[key] = lay[key]
+        msg = {
+            'data': data,
+            'win': win,
+            'eid': env,
+            'layout': _opts2layout(opts,noScrub=True),
+        }
+        return self._send(msg)
 
     def bar(self, X, Y=None, win=None, env=None, opts=None):
         """

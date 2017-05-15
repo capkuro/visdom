@@ -9,6 +9,7 @@ requirements = [
     'tornado',
     'pyzmq',
     'six',
+	'plotly',
 ]
 
 setup(

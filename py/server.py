@@ -48,7 +48,7 @@ def get_rand_id():
 def ensure_dir_exists(path):
     """Make sure the parent dir exists for path so we can write a file."""
     try:
-        os.makedirs(os.path.dirname(path))
+        os.makedirs(path)
     except OSError as e1:
         assert e1.errno == 17  # errno.EEXIST
         pass
@@ -64,8 +64,8 @@ def escape_eid(eid):
     """Replace slashes with underscores, to avoid recognizing them
     as directories.
     """
-
-    return eid.replace('/', '_')
+    return eid
+    #return eid.replace('/', '_')
 
 
 def extract_eid(args):
@@ -105,11 +105,15 @@ class Application(tornado.web.Application):
         # reload state
         ensure_dir_exists(FLAGS.env_path)
         l = [i for i in os.listdir(FLAGS.env_path) if '.json' in i]
-
-        for i in l:
-            p = os.path.join(FLAGS.env_path, i)
+        j = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(FLAGS.env_path)) for f in fn if '.json' in f]
+        print(j)
+        print(os.path.expanduser(FLAGS.env_path))
+        for i in j:
+            p = i
             f = tornado.escape.json_decode(open(p, 'r').read())
-            eid = i.replace('.json', '')
+            eid = i.replace('.json', '').replace(os.path.expanduser(FLAGS.env_path),'')
+            if eid[0] == '/':
+                eid = eid[1:]
             state[eid] = {'jsons': f['jsons'], 'reload': f['reload']}
 
         if 'main' not in state and 'main.json' not in l:
@@ -164,6 +168,14 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
                 self.state[msg['eid']] = copy.deepcopy(self.state[msg['prev_eid']])
                 self.state[msg['eid']]['reload'] = msg['data']
                 self.eid = msg['eid']
+                if '/' in self.eid:
+                    splitted = self.eid.split("/")[:-1]
+                    print(splitted)
+                    newpath = ""
+                    for el in splitted:
+                        newpath += el + "/"
+                    path = os.path.join(FLAGS.env_path,newpath)
+                    ensure_dir_exists(path)
                 serialize_env(self.state, [self.eid])
 
     def on_close(self):
@@ -246,15 +258,19 @@ class PostHandler(BaseHandler):
         args = tornado.escape.json_decode(tornado.escape.to_basestring(self.request.body))
 
         ptype = args['data'][0]['type']
+        print(ptype)
         p = pane(args)
         eid = extract_eid(args)
 
+        if type(eid) == type([]):
+            eid = eid[0]
+
+        print(eid)
         if ptype in ['image', 'text']:
             p.update(dict(content=args['data'][0]['content'], type=ptype))
         else:
             p['content'] = dict(data=args['data'], layout=args['layout'])
             p['type'] = 'plot'
-
         register_pane(self, p, eid)
 
 
@@ -364,10 +380,14 @@ def load_env(state, eid, socket):
 
 
 def gather_envs(state):
+    print(os.listdir(FLAGS.env_path))
     items = [i.replace('.json', '') for i in os.listdir(FLAGS.env_path)
                 if '.json' in i]
     return sorted(list(set(items + list(state.keys()))))
 
+def gather_envs2(state,filter):
+    items = [i for i in state.keys() if filter in i]
+    return sorted(items)
 
 class EnvHandler(BaseHandler):
     def initialize(self, state, subs):
@@ -375,12 +395,22 @@ class EnvHandler(BaseHandler):
         self.subs = subs
 
     def get(self, eid):
-        items = gather_envs(self.state)
-        active = 'main' if eid not in items else eid
+        if '/' in eid:
+            splitted = eid.split("/")[:-1]
+            newpath = ""
+            for el in splitted:
+                newpath += el + "/"
+            #TODO: Arreglar cuando no existe el directiorio
+            items = gather_envs2(self.state, newpath)
+            print(len(items))
+            active = items[0] if (items and eid not in items) else eid
+        else:
+            items = gather_envs(self.state)
+            active = 'main' if eid not in items else eid
         self.render(
             'index.html',
             user=getpass.getuser(),
-            items=[active],
+            items=items,
             active_item=active
         )
 

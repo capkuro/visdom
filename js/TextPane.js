@@ -9,7 +9,7 @@
 
 const Pane = require('./Pane');
 
-class TextPane extends React.Component {
+class TextPane extends React.Component{
 
   handleDownload = () => {
     var blob = new Blob([this.props.content], {type:"text/plain"});

@@ -1,4 +1,3 @@
-var GLOBALVAR = null;
 ! function(e) {
     function t(o) {
         if (n[o]) return n[o].exports;
@@ -651,7 +650,6 @@ var GLOBALVAR = null;
                     })
                 }, r.selectEnv = function(e) {
                     var t = e === r.state.envID;
-		    GLOBALVAR = r
                     r.setState({
                         envID: e,
                         saveText: e,
@@ -761,72 +759,70 @@ var GLOBALVAR = null;
                                 h: a.h
                             })))
                         });
-                    
-                    // return React.createElement("div", null,
-                    //     React.createElement("div", {id:"sidebar-wrapper"}, //<- inicio del sidebar
-                    //         React.createElement("ul",{className:"sidebar-nav", id:"sidebar_menu"},
-                    //             React.createElement("li",{className:"sidebar-brand"},"visdom")
-                    //         ),
-                    //         React.createElement("div",{id:"jstree"} // <- Elemento que genera el arbol
-                    //         ),
-                    //         React.createElement("ul",{className:"sidebar-nav", id:"sidebar"},
-                    //             React.createElement("li",{},
-                    //                 React.createElement("select",
-                    //                     {className: "form-control",disabled: !this.state.connected,onChange: function(t){e.selectEnv(t.target.value)},value: this.state.envID},
-                    //                     this.state.envList.map(function(e) {return React.createElement("option", {key: e,value: e}, e)})
-                    //                 )
-                    //             )
-                    //         ),
-                    //         React.createElement("ul",{className:"sidebar-nav", id:"sidebar"},
-                    //             React.createElement("li",{},
-                    //                 React.createElement("button",
-                    //                     {className: "btn btn-default",onClick: this.relayout},
-                    //                     React.createElement("span", {className: "glyphicon glyphicon-th"})
-                    //                 )
-                    //             )
-                    //         ),
-                    //         React.createElement("ul",{className:"sidebar-nav", id:"sidebar"},
-                    //             React.createElement("li",{},
-                    //                 React.createElement("button",
-                    //                     {className: "btn btn-default",disabled: !this.state.connected,onClick: this.closeAllPanes},
-                    //                     "clear"
-                    //                 )
-                    //             )
-                    //         ),
+                    /*
+                    return React.createElement("div", null,
+                        React.createElement("div", {id:"sidebar-wrapper"}, //<- inicio del sidebar
+                            React.createElement("ul",{className:"sidebar-nav", id:"sidebar_menu"},
+                                React.createElement("li",{className:"sidebar-brand"},"visdom")
+                            ),
+                            React.createElement("div",{id:"jstree"} // <- Elemento que genera el arbol
+                            ),
+                            React.createElement("ul",{className:"sidebar-nav", id:"sidebar"},
+                                React.createElement("li",{},
+                                    React.createElement("select",
+                                        {className: "form-control",disabled: !this.state.connected,onChange: function(t){e.selectEnv(t.target.value)},value: this.state.envID},
+                                        this.state.envList.map(function(e) {return React.createElement("option", {key: e,value: e}, e)})
+                                    )
+                                )
+                            ),
+                            React.createElement("ul",{className:"sidebar-nav", id:"sidebar"},
+                                React.createElement("li",{},
+                                    React.createElement("button",
+                                        {className: "btn btn-default",onClick: this.relayout},
+                                        React.createElement("span", {className: "glyphicon glyphicon-th"})
+                                    )
+                                )
+                            ),
+                            React.createElement("ul",{className:"sidebar-nav", id:"sidebar"},
+                                React.createElement("li",{},
+                                    React.createElement("button",
+                                        {className: "btn btn-default",disabled: !this.state.connected,onClick: this.closeAllPanes},
+                                        "clear"
+                                    )
+                                )
+                            ),
 
-                    //         React.createElement("ul",{className:"sidebar-nav", id:"sidebar"},
-                    //             React.createElement("li",{},
-                    //                 React.createElement("input",
-                    //                     {className: "form-control",type: "text",onChange: function(t) {e.setState({saveText: t.target.value})},value: this.state.saveText,ref: function(t) {return e._envFieldRef = t}}
-                    //                 )
-                    //             )
-                    //         ),
-                    //         React.createElement("ul",{className:"sidebar-nav", id:"sidebar"},
-                    //             React.createElement("li",{},
-                    //                 React.createElement("button",
-                    //                     {className: "btn btn-default",disabled: !this.state.connected,onClick: this.saveEnv},
-                    //                     this.state.envList.indexOf(this.state.saveText) >= 0 ? "save" : "fork"
-                    //                 )
-                    //             )
-                    //         ),
-                    //         React.createElement("ul",{className:"sidebar-nav", id:"sidebar"},
-                    //             React.createElement("li",{},
-                    //                 React.createElement("button",
-                    //                     {className: classNames({btn: !0,"btn-success": this.state.connected,"btn-danger": !this.state.connected}),onClick: this.toggleOnlineState},
-                    //                     this.state.connected ? "online" : "offline"
-                    //                 )
-                    //             )
-                    //         )
-                    //     ),
-                    //     React.createElement("div",{id:"page-content-wrapper"},
-                    //         React.createElement(d,{className: "layout",rowHeight: v,autoSize: !1,margin: [m, m],layout: this.state.layout,draggableHandle: ".bar",onLayoutChange: this.handleLayoutChange,onWidthChange: this.onWidthChange,onResizeStop: this.resizePane,onDragStop: this.movePane},
-                    //             t
-                    //         )
-                    //     )
+                            React.createElement("ul",{className:"sidebar-nav", id:"sidebar"},
+                                React.createElement("li",{},
+                                    React.createElement("input",
+                                        {className: "form-control",type: "text",onChange: function(t) {e.setState({saveText: t.target.value})},value: this.state.saveText,ref: function(t) {return e._envFieldRef = t}}
+                                    )
+                                )
+                            ),
+                            React.createElement("ul",{className:"sidebar-nav", id:"sidebar"},
+                                React.createElement("li",{},
+                                    React.createElement("button",
+                                        {className: "btn btn-default",disabled: !this.state.connected,onClick: this.saveEnv},
+                                        this.state.envList.indexOf(this.state.saveText) >= 0 ? "save" : "fork"
+                                    )
+                                )
+                            ),
+                            React.createElement("ul",{className:"sidebar-nav", id:"sidebar"},
+                                React.createElement("li",{},
+                                    React.createElement("button",
+                                        {className: classNames({btn: !0,"btn-success": this.state.connected,"btn-danger": !this.state.connected}),onClick: this.toggleOnlineState},
+                                        this.state.connected ? "online" : "offline"
+                                    )
+                                )
+                            )
+                        ),
+                        React.createElement("div",{id:"page-content-wrapper"},
+                            React.createElement(d,{className: "layout",rowHeight: v,autoSize: !1,margin: [m, m],layout: this.state.layout,draggableHandle: ".bar",onLayoutChange: this.handleLayoutChange,onWidthChange: this.onWidthChange,onResizeStop: this.resizePane,onDragStop: this.movePane},
+                                t
+                            )
+                        )
 
-                    // ); 
-                    //<- fin del sidebar
-
+                    ); *///<- fin del sidebar
                     // navbar original, se muestra en la parte superior y sin el arbol de directorio, descomentar css original de index
                     return React.createElement("div", null, React.createElement("div", {
                         className: "navbar navbar-default"
@@ -834,22 +830,24 @@ var GLOBALVAR = null;
                         className: "form-inline"
                     }, React.createElement("span", {
                         className: "visdom-title"
-                    }, "visdom"),
-                    
-                     React.createElement("button", {
-                        className: "btn btn-primary",
+                    }, "visdom"), React.createElement("select", {
+                        className: "form-control",
                         disabled: !this.state.connected,
-                        onClick: function(){                           
-                           $('#jstree').slideToggle();
-                        }
-                    }, "Dir"),                  
-                    React.createElement("button", {
+                        onChange: function(t) {
+                            e.selectEnv(t.target.value)
+                        },
+                        value: this.state.envID
+                    }, this.state.envList.map(function(e) {
+                        return React.createElement("option", {
+                            key: e,
+                            value: e
+                        }, e)
+                    })), React.createElement("button", {
                         className: "btn btn-default",
                         onClick: this.relayout
                     }, React.createElement("span", {
                         className: "glyphicon glyphicon-th"
-                    })),
-                     React.createElement("button", {
+                    })), React.createElement("button", {
                         className: "btn btn-default",
                         disabled: !this.state.connected,
                         onClick: this.closeAllPanes
@@ -879,9 +877,7 @@ var GLOBALVAR = null;
                             "btn-danger": !this.state.connected
                         }),
                         onClick: this.toggleOnlineState
-                    }, this.state.connected ? "online" : "offline"))),
-                     React.createElement("div", null,
-                      React.createElement(d, {
+                    }, this.state.connected ? "online" : "offline"))), React.createElement("div", null, React.createElement(d, {
                         className: "layout",
                         rowHeight: v,
                         autoSize: !1,
@@ -892,29 +888,10 @@ var GLOBALVAR = null;
                         onWidthChange: this.onWidthChange,
                         onResizeStop: this.resizePane,
                         onDragStop: this.movePane
-                    }, t),
-                    React.createElement("div",{
-                        id:"jstree",
-                        style : {
-                            display:"none",
-                            margin:"10px",
-                            padding: "15px",
-                            background: "#f0f0f0",
-                            width:"15%",
-                            zIndex: "9999999",
-                            position: "absolute",
-                            border:"2px solid black"
-
-                            
-                        }
-                    })
-
-
-                    ))
+                    }, t)))
 
                 }
             }]), t
         }(React.Component);
-    document.addEventListener("DOMContentLoaded", i);
-    
+    document.addEventListener("DOMContentLoaded", i)
 }]);

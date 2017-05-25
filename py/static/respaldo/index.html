@@ -57,8 +57,7 @@ LICENSE file in the root directory of this source tree.
 
     </script>
     <script src={{ static_url("js/main.js") }}></script>
-    <!-- css original-->
-    <link rel="stylesheet" href={{ static_url("css/style.css") }}>
+    <link rel="stylesheet" href={{ static_url("css/style.css") }}><!-- css original-->
     <!--<link rel="stylesheet" href={{ static_url("css/style2.css") }}> -->
 
     <title>visdom</title>
@@ -67,12 +66,12 @@ LICENSE file in the root directory of this source tree.
 
   <body>
     <noscript>JS is required</noscript>
-    <!--<button class="btn btn-primary" data-toggle="collapse" data-target="#sidebar-wrapper">Dir</button>-->
+    <button class="btn btn-primary" data-toggle="collapse" data-target="#sidebar-wrapper">Dir</button>
     <div id="wrapper">
       </div>
-      <div id="divCarpetas"></div>
       <script>
-$(function () {
+
+      $(function () {
         // 6 create an instance when the DOM is ready
               $('#jstree').jstree({
                   'core' : {
@@ -81,13 +80,10 @@ $(function () {
               });
         // 7 bind to events triggered on the tree
               $('#jstree').on("changed.jstree", function (e, data) {
-                  console.log(data.selected);
-                  debugger;
-              GLOBALVAR.selectEnv(data.selected);
+              console.log(data.selected);
               });
         // 8 interact with the tree - either way is OK
               });
-
     </script>
 
   </body>

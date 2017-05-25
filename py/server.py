@@ -39,8 +39,70 @@ parser.add_argument('-env_path', metavar='env_path', type=str,
                     default='%s/.visdom/' % expanduser("~"),
                     help='path to serialized session to reload (end with /).')
 FLAGS = parser.parse_args()
+class treeObj(object):
+    def __init__(self,id="",name = "",type = ""):
+        self._id = id
+        self._name = name
+        self._type = type
+        self._parent = None
+        self._child = []
+        self._files = []
 
+    def getId(self):
+        return self._id
 
+    def setId(self,id):
+        self._id = id
+
+    def getType(self):
+        return self._type
+
+    def getDir(self):
+        return self._type+self._id
+
+    def setChilds(self,childs):
+        self._child = childs
+
+    def getChilds(self):
+        return self._child
+
+    def setFiles(self,files):
+        self._files = files
+
+    def getFiles(self):
+        return self._files
+
+    def addChild(self,child):
+        if not(child in self._child):
+            self._child.append(child)
+        #child._addParent(self)
+
+    def addParent(self,Parent,over=True):
+        if self._parent and over:
+            self._parent = Parent
+
+    def addChildAndParent(self,child,parent):
+        if child:
+            self.addChild(child)
+        if parent:
+            self.addParent(parent)
+
+    def printRecc(self):
+        print(self._id,self._name,self._type,self._child,self._files)
+        print("---")
+        if len(self._child) == 0:
+            return
+
+        for child in self._child:
+            child.printRecc()
+
+    def createTree(self):
+        children = []
+        for el in self._child:
+            children.append(el.createTree())
+        for el in self._files:
+            children.append({"id":self._id+el,"text":el,"icon":"glyphicon glyphicon-file"})
+        return {"id":self._id,"text":self._name,"children":children}
 def get_rand_id():
     return str(hex(int(time.time() * 10000000))[2:])
 
@@ -88,6 +150,14 @@ tornado_settings = {
 def serialize_env(state, eids):
     l = [i for i in eids if i in state]
     for i in l:
+        print(i)
+        splitted = i.split("/")[:-1]
+        print(splitted)
+        newpath = ""
+        for el in splitted:
+            newpath += el + "/"
+        path = os.path.join(FLAGS.env_path, newpath)
+        ensure_dir_exists(path)
         p = '%s/%s.json' % (FLAGS.env_path, i)
         open(p, 'w').write(json.dumps(state[i]))
     return l
@@ -97,17 +167,54 @@ def serialize_all(state):
     serialize_env(state, list(state.keys()))
 
 
+def buildTree(path):
+    """
+    {"id":"SAD","text":"Root node","children":[{"id":2,"text":"Child node 1","children":[{"id":8,"text":"Child node 1","children":[{"id":9,"text":"Child node 1","children":[{"id":10,"text":"Child node 1"}]}]}]},{"id":3,"text":"Child node 2","icon":"glyphicon glyphicon-file"}]},
+    {"id":4,"text":"Hola","icon":"glyphicon glyphicon-file"}
+    """
+    print(path)
+    files = {}
+    trees = []
+    treeDir ={}
+    for root, dr, fl in os.walk(os.path.expanduser(path)):
+        root = root.replace(os.path.expanduser(path), "")
+        root = root+"/" if root else root
+
+        if not(root in treeDir.keys()):
+            y = treeObj(id=root, name=root, type="Folder")
+        else:
+            y = treeDir[root]
+        for el in dr:
+            id = root+el+"/"
+            print(id)
+            aux = treeObj(id=id,name=el,type="Folder")
+            treeDir[id] = aux
+            y.addChild(treeDir[id])
+            treeDir[id].addParent(y)
+        files[y.getId()] = []
+        for el in fl:
+            files[y.getId()].append(el.replace('.json',""))
+        y.setFiles(files[y.getId()])
+        if not (y.getId() in treeDir.keys()):
+            trees.append(y)
+    print(treeDir)
+    trees[0].printRecc()
+    tree = trees[0].createTree()
+    return tree
+    print("=======TREEE CREATED==========")
+
 class Application(tornado.web.Application):
     def __init__(self):
         state = {}
         subs = {}
-
+        dirs = {}
+        files = {}
         # reload state
+        dirs = buildTree(FLAGS.env_path)
         ensure_dir_exists(FLAGS.env_path)
         l = [i for i in os.listdir(FLAGS.env_path) if '.json' in i]
         j = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(FLAGS.env_path)) for f in fn if '.json' in f]
         print(j)
-        print(os.path.expanduser(FLAGS.env_path))
         for i in j:
             p = i
             f = tornado.escape.json_decode(open(p, 'r').read())
@@ -128,7 +235,7 @@ class Application(tornado.web.Application):
             (r"/env/(.*)", EnvHandler, dict(state=state, subs=subs)),
             (r"/save", SaveHandler, dict(state=state, subs=subs)),
             (r"/error/(.*)", ErrorHandler),
-            (r"/(.*)", IndexHandler, dict(state=state)),
+            (r"/(.*)", IndexHandler, dict(state=state,subs=dirs)),
         ]
         super(Application, self).__init__(handlers, **tornado_settings)
 
@@ -264,7 +371,6 @@ class PostHandler(BaseHandler):
 
         if type(eid) == type([]):
             eid = eid[0]
-
         print(eid)
         if ptype in ['image', 'text']:
             p.update(dict(content=args['data'][0]['content'], type=ptype))
@@ -411,11 +517,17 @@ class EnvHandler(BaseHandler):
             'index.html',
             user=getpass.getuser(),
             items=items,
+            testvar=json.dumps([
+                      {"id":1,"text":"Root node","children":[{"id":2,"text":"Child node 1","children":[{"id":8,"text":"Child node 1","children":[{"id":9,"text":"Child node 1","children":[{"id":10,"text":"Child node 1"}]}]}]},{"id":3,"text":"Child node 2","icon":"glyphicon glyphicon-file"}]},
+                      {'id':4,'text':'Hola','icon':'glyphicon glyphicon-file'}
+                    ]),
             active_item=active
         )
 
     def post(self, args):
         sid = tornado.escape.json_decode(tornado.escape.to_basestring(self.request.body))['sid']
+        args = args.replace(FLAGS.env_path+"/","").replace(".json","")
+        print(args)
         load_env(self.state, args, self.subs[sid])
 
 
@@ -432,8 +544,9 @@ class SaveHandler(BaseHandler):
 
 
 class IndexHandler(BaseHandler):
-    def initialize(self, state):
+    def initialize(self, state,subs):
         self.state = state
+        self.dirs = subs
 
     def get(self, args, **kwargs):
         items = gather_envs(self.state)
@@ -441,6 +554,7 @@ class IndexHandler(BaseHandler):
             'index.html',
             user=getpass.getuser(),
             items=items,
+            testvar=json.dumps(self.dirs["children"]),
             active_item='main'
         )
 
@@ -461,3 +575,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

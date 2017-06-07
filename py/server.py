@@ -98,6 +98,8 @@ class treeObj(object):
 
     def createTree(self):
         children = []
+        print("id {}, name {}".format(self._id,self._name))
+        print(self._files)
         for el in self._child:
             children.append(el.createTree())
         for el in self._files:
@@ -179,6 +181,7 @@ def buildTree(path):
     for root, dr, fl in os.walk(os.path.expanduser(path)):
         root = root.replace(os.path.expanduser(path), "")
         root = root+"/" if root else root
+        root = root[1:] if root and root[0] == '/' else root
 
         if not(root in treeDir.keys()):
             y = treeObj(id=root, name=root, type="Folder")
@@ -194,14 +197,20 @@ def buildTree(path):
         files[y.getId()] = []
         for el in fl:
             files[y.getId()].append(el.replace('.json',""))
+
+        print("====files: {}".format(files))
         y.setFiles(files[y.getId()])
         if not (y.getId() in treeDir.keys()):
             trees.append(y)
+    print("Printing Tree Dir")
     print(treeDir)
+    print("=========\n Printing tree recc")
     trees[0].printRecc()
+
     tree = trees[0].createTree()
-    return tree
     print("=======TREEE CREATED==========")
+    return tree
+
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -547,6 +556,9 @@ class IndexHandler(BaseHandler):
     def initialize(self, state,subs):
         self.state = state
         self.dirs = subs
+        print("========")
+        print(self.dirs)
+        print("///")
 
     def get(self, args, **kwargs):
         items = gather_envs(self.state)

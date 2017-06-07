@@ -642,7 +642,9 @@ var GLOBALVAR = null;
                         })
                     }
                 }, r.closeAllPanes = function() {
+                    console.log(r)
                     Object.keys(r.state.panes).map(function(e) {
+                        //console.log(e)
                         r.closePane(e, !1, !1)
                     }), r.rebin(), r.setState({
                         layout: [],

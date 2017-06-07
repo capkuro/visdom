@@ -82,9 +82,9 @@ $(function () {
               });
         // 7 bind to events triggered on the tree
               $('#jstree').on("changed.jstree", function (e, data) {
-                  console.log(data.selected);
+                  console.log(data.selected[0]);
                   debugger;
-              GLOBALVAR.selectEnv(data.selected);
+              GLOBALVAR.selectEnv(data.selected[0]);
               });
         // 8 interact with the tree - either way is OK
               });

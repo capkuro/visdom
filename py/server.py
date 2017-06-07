@@ -244,7 +244,7 @@ class Application(tornado.web.Application):
             (r"/env/(.*)", EnvHandler, dict(state=state, subs=subs)),
             (r"/save", SaveHandler, dict(state=state, subs=subs)),
             (r"/error/(.*)", ErrorHandler),
-            (r"/(.*)", IndexHandler, dict(state=state,subs=dirs)),
+            (r"/(.*)", IndexHandler, dict(state=state)),
         ]
         super(Application, self).__init__(handlers, **tornado_settings)
 
@@ -270,7 +270,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
     def on_message(self, message):
         print('from web client: ', message)
         msg = tornado.escape.json_decode(tornado.escape.to_basestring(message))
-
+        print(msg)
         cmd = msg.get('cmd')
         if cmd == 'close':
             if 'data' in msg and 'eid' in msg:
@@ -522,14 +522,12 @@ class EnvHandler(BaseHandler):
         else:
             items = gather_envs(self.state)
             active = 'main' if eid not in items else eid
+        dir = buildTree(FLAGS.env_path)
         self.render(
             'index.html',
             user=getpass.getuser(),
             items=items,
-            testvar=json.dumps([
-                      {"id":1,"text":"Root node","children":[{"id":2,"text":"Child node 1","children":[{"id":8,"text":"Child node 1","children":[{"id":9,"text":"Child node 1","children":[{"id":10,"text":"Child node 1"}]}]}]},{"id":3,"text":"Child node 2","icon":"glyphicon glyphicon-file"}]},
-                      {'id':4,'text':'Hola','icon':'glyphicon glyphicon-file'}
-                    ]),
+            testvar=json.dumps(dir),
             active_item=active
         )
 
@@ -553,9 +551,9 @@ class SaveHandler(BaseHandler):
 
 
 class IndexHandler(BaseHandler):
-    def initialize(self, state,subs):
+    def initialize(self, state):
         self.state = state
-        self.dirs = subs
+        self.dirs = buildTree(FLAGS.env_path)
         print("========")
         print(self.dirs)
         print("///")

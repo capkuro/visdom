@@ -66,8 +66,7 @@ def _axisformat(x, opts):
         ax = opts.get(x+'axis')
         return ax
     if any([opts.get(x + i) for i in fields]):
-
-        return {
+        aux ={
             'type': opts.get(x + 'type'),
             'title': opts.get(x + 'label'),
             'range': [opts.get(x + 'tickmin'), opts.get(x + 'tickmax')]
@@ -77,6 +76,9 @@ def _axisformat(x, opts):
             'tickwidth': opts.get(x + 'tickstep'),
             'showticklabels': opts.get(x + 'tick'),
         }
+        print("Printing Aux====")
+        return aux
+    return None
 
 
 def _opts2layout(opts, is3d=False,noScrub=False):
@@ -89,7 +91,7 @@ def _opts2layout(opts, is3d=False,noScrub=False):
         'showlegend': opts.get('legend', False),
         'title': opts.get('title'),
         'xaxis': xaxis,
-        'yaxis': yaxis('y', opts),
+        'yaxis': yaxis,
         'annotations': opts.get('annotations'),
         'margin': {
             'l': opts.get('marginleft', 60),
@@ -103,7 +105,7 @@ def _opts2layout(opts, is3d=False,noScrub=False):
 
     if opts.get('stacked'):
         layout['barmode'] = 'stack' if opts.get('stacked') else 'group'
-    
+
     if noScrub: return layout
     print("====== Layout:")
     print(layout)

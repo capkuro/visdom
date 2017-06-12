@@ -63,7 +63,7 @@ def _scrub_dict(d):
 def _axisformat(x, opts):
     fields = ['type', 'tick', 'label', 'tickvals', 'ticklabels', 'tickmin', 'tickmax']
 
-    #print(x,opts)
+    print(x,opts)
     if opts.get(x + 'axis'):
         ax = opts.get(x+'axis')
         print(ax)

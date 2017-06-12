@@ -66,16 +66,21 @@ def _axisformat(x, opts):
         ax = opts.get(x+'axis')
         return ax
     if any([opts.get(x + i) for i in fields]):
-        aux ={
-            'type': opts.get(x + 'type'),
-            'title': opts.get(x + 'label'),
-            'range': [opts.get(x + 'tickmin'), opts.get(x + 'tickmax')]
-            if (opts.get(x + 'tickmin') and opts.get(x + 'tickmax')) else None,
-            'tickvals': opts.get(x + 'tickvals'),
-            'ticktext': opts.get(x + 'ticklabels'),
-            'tickwidth': opts.get(x + 'tickstep'),
-            'showticklabels': opts.get(x + 'tick'),
-        }
+        typ = opts.get(x + 'type', None)
+        title = opts.get(x + 'label', None)
+        ranger = [opts.get(x + 'tickmin'), opts.get(x + 'tickmax')] if (opts.get(x + 'tickmin') and opts.get(x + 'tickmax')) else None
+        tickvals = opts.get(x + 'tickvals', None)
+        ticktext = opts.get(x + 'ticklabels', None)
+        tickwidth = opts.get(x + 'tickstep', None)
+        showticklabels = opts.get(x + 'tick', True)
+        aux ={}
+        aux['type'] = typ
+        aux['title'] = title
+        aux['range'] = ranger
+        aux['tickvals'] = tickvals
+        aux['ticktext'] = ticktext
+        aux['tickwidth'] = tickwidth
+        aux['showticklabels'] = showticklabels
         print("Printing Aux====")
         return aux
     return None
@@ -90,8 +95,8 @@ def _opts2layout(opts, is3d=False,noScrub=False):
         'height': opts.get('height'),
         'showlegend': opts.get('legend', False),
         'title': opts.get('title'),
-        'xaxis': xaxis,
-        'yaxis': yaxis,
+        'xaxis': xaxis[0],
+        'yaxis': yaxis[0],
         'annotations': opts.get('annotations'),
         'margin': {
             'l': opts.get('marginleft', 60),

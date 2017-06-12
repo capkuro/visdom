@@ -55,7 +55,7 @@ def loadfile(filename):
 def _scrub_dict(d):
     if type(d) is dict:
         return dict((k, _scrub_dict(v)) for k, v in list(d.items())
-                                        if v and _scrub_dict(v))
+                                        if v is not None and _scrub_dict(v))
     else:
         return d
 
@@ -70,7 +70,7 @@ def _axisformat(x, opts):
         print(ax)
         return ax
     if any([opts.get(x + i) for i in fields]):
-        
+
         return {
             'type': opts.get(x + 'type'),
             'title': opts.get(x + 'label'),
@@ -804,7 +804,7 @@ class Visdom(object):
             'data': data,
             'win': win,
             'eid': env,
-            'layout': _opts2layout(opts,noScrub=True)
+            'layout': _opts2layout(opts)
         })
 
     def histogram(self, X, win=None, env=None, opts=None):

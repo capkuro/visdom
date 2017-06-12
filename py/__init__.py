@@ -825,7 +825,7 @@ class Visdom(object):
 
         minx, maxx = X.min(), X.max()
         bins = np.histogram(X, bins=opts['numbins'], range=(minx, maxx))[0]
-        linrange = np.linspace(minx, maxx, opts['numbins'])
+        linrange = np.linspace(minx, maxx, opts['numbins'],dtype=int)
 
         return self.bar(
             X=bins,

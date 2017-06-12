@@ -62,12 +62,8 @@ def _scrub_dict(d):
 
 def _axisformat(x, opts):
     fields = ['type', 'tick', 'label', 'tickvals', 'ticklabels', 'tickmin', 'tickmax']
-
-    print(x,opts)
-    print(any([opts.get(x + i) for i in fields]))
     if opts.get(x + 'axis'):
         ax = opts.get(x+'axis')
-        print(ax)
         return ax
     if any([opts.get(x + i) for i in fields]):
 
@@ -84,14 +80,16 @@ def _axisformat(x, opts):
 
 
 def _opts2layout(opts, is3d=False,noScrub=False):
+    xaxis = _axisformat('x', opts),
+    yaxis = _axisformat('y', opts),
     layout = {
         'size': opts.get('size'),
         'width': opts.get('width'),
         'height': opts.get('height'),
         'showlegend': opts.get('legend', False),
         'title': opts.get('title'),
-        'xaxis': _axisformat('x', opts),
-        'yaxis': _axisformat('y', opts),
+        'xaxis': xaxis,
+        'yaxis': yaxis('y', opts),
         'annotations': opts.get('annotations'),
         'margin': {
             'l': opts.get('marginleft', 60),
@@ -105,9 +103,15 @@ def _opts2layout(opts, is3d=False,noScrub=False):
 
     if opts.get('stacked'):
         layout['barmode'] = 'stack' if opts.get('stacked') else 'group'
-
+    
     if noScrub: return layout
-    return _scrub_dict(layout)
+    print("====== Layout:")
+    print(layout)
+    scrubed = _scrub_dict(layout)
+    print("===== Scrubed: ")
+    print(scrubed)
+    print("\n\n")
+    return scrubed
 
 
 def _markerColorCheck(mc, X, Y, L):

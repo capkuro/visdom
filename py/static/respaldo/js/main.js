@@ -554,6 +554,7 @@
                         } else {
                             var c = w[e.type][0],
                                 s = w[e.type][1];
+                            console.log(e)
                             if (e.content && e.content.size) {
                                 var l = r.pix2grid(e.content.size[1], e.content.size[0] + 14);
                                 c = l.w, s = Math.ceil(l.h), e.content.caption && (s += 1)

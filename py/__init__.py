@@ -802,7 +802,7 @@ class Visdom(object):
             'data': data,
             'win': win,
             'eid': env,
-            'layout': _opts2layout(opts)
+            'layout': _opts2layout(opts,noScrub=True)
         })
 
     def histogram(self, X, win=None, env=None, opts=None):

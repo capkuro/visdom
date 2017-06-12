@@ -547,16 +547,20 @@ var GLOBALVAR = null;
                     })
                 }, r.processPane = function(e, t, n) {
                     var o = e.id in t;
+                    console.log("======HOLA=======");
+                    console.log(e);
                     if (t[e.id] = e, !o) {
                         var a = JSON.parse(localStorage.getItem(r.keyLS(e.id)));
-                        if (a) {
+                        if (false) {
                             var i = a;
                             r._bin.content.push(i)
+                            console.log("ME METI ACA :C =======")
                         } else {
                             var c = w[e.type][0],
                                 s = w[e.type][1];
-                            if (e.content && e.content.size) {
-                                var l = r.pix2grid(e.content.size[1], e.content.size[0] + 14);
+                            console.log("ACA ME METI =====")
+                            if (e.content && e.content.layout  && e.content.layout.size) {
+                                var l = r.pix2grid(e.content.layout.size[1], e.content.layout.size[0] + 14);
                                 c = l.w, s = Math.ceil(l.h), e.content.caption && (s += 1)
                             }
                             r._bin.content.push({

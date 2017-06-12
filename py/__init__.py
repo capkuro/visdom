@@ -55,13 +55,13 @@ def loadfile(filename):
 def _scrub_dict(d):
     if type(d) is dict:
         return dict((k, _scrub_dict(v)) for k, v in list(d.items())
-                                        if v is not None and _scrub_dict(v))
+                                        if v is not None and _scrub_dict(v) is not None)
     else:
         return d
 
 
 def _axisformat(x, opts):
-    fields = ['type', 'tick', 'label', 'tickvals', 'ticklabels', 'tickmin', 'tickmax']
+    fields = ['type', 'tick', 'label', 'tickvals', 'ticklabels', 'tickmin', 'tickmax','autorange','grid','line','mirror']
     if opts.get(x + 'axis'):
         ax = opts.get(x+'axis')
         return ax
@@ -69,10 +69,15 @@ def _axisformat(x, opts):
         typ = opts.get(x + 'type', None)
         title = opts.get(x + 'label', None)
         ranger = [opts.get(x + 'tickmin'), opts.get(x + 'tickmax')] if (opts.get(x + 'tickmin') and opts.get(x + 'tickmax')) else None
+        autorange= opts.get(x + 'autorange', False)
         tickvals = opts.get(x + 'tickvals', None)
         ticktext = opts.get(x + 'ticklabels', None)
         tickwidth = opts.get(x + 'tickstep', None)
         showticklabels = opts.get(x + 'tick', True)
+        showgrid = opts.get(x+'grid',False)
+        showlime = opts.get(x+'line',False)
+        mirror = opts.get(x+'mirror',True)
+        color = opts.get(x+'color')
         aux ={}
         aux['type'] = typ
         aux['title'] = title
@@ -81,7 +86,7 @@ def _axisformat(x, opts):
         aux['ticktext'] = ticktext
         aux['tickwidth'] = tickwidth
         aux['showticklabels'] = showticklabels
-        print("Printing Aux====")
+        aux['color'] = color
         return aux
     return None
 
@@ -89,6 +94,10 @@ def _axisformat(x, opts):
 def _opts2layout(opts, is3d=False,noScrub=False):
     xaxis = _axisformat('x', opts),
     yaxis = _axisformat('y', opts),
+    layout = opts
+    layout['xaxis'] = xaxis[0]
+    layout['yaxis'] = yaxis[0]
+    """
     layout = {
         'size': opts.get('size'),
         'width': opts.get('width'),
@@ -98,6 +107,13 @@ def _opts2layout(opts, is3d=False,noScrub=False):
         'xaxis': xaxis[0],
         'yaxis': yaxis[0],
         'annotations': opts.get('annotations'),
+        'hoverinfo':opts.get('hoverinfo'),
+        "mode": opts.get('mode'),
+        'hoveron': opts.get('hoveron'),
+        'line': opts.get('line'),
+        'visible': opts.get('visible'),
+        'opacity': opts.get('opacity'),
+        'marker': opts.get('marker'),
         'margin': {
             'l': opts.get('marginleft', 60),
             'r': opts.get('marginright', 60),
@@ -105,21 +121,16 @@ def _opts2layout(opts, is3d=False,noScrub=False):
             'b': opts.get('marginbottom', 60),
         }
     }
+    """
     if is3d:
         layout['zaxis'] = _axisformat('z', opts)
 
     if opts.get('stacked'):
         layout['barmode'] = 'stack' if opts.get('stacked') else 'group'
 
-    if noScrub: return layout
-    print("====== Layout:")
-    print(layout)
-    scrubed = _scrub_dict(layout)
-    print("===== Scrubed: ")
-    print(scrubed)
-    print("\n\n")
     return scrubed
-
+    if noScrub: return layout
+    
 
 def _markerColorCheck(mc, X, Y, L):
     assert isndarray(mc), 'mc should be a numpy ndarray'

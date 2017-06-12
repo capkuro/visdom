@@ -64,11 +64,13 @@ def _axisformat(x, opts):
     fields = ['type', 'tick', 'label', 'tickvals', 'ticklabels', 'tickmin', 'tickmax']
 
     print(x,opts)
+    print(any([opts.get(x + i) for i in fields]))
     if opts.get(x + 'axis'):
         ax = opts.get(x+'axis')
         print(ax)
         return ax
-    elif any([opts.get(x + i) for i in fields]):
+    if any([opts.get(x + i) for i in fields]):
+        
         return {
             'type': opts.get(x + 'type'),
             'title': opts.get(x + 'label'),

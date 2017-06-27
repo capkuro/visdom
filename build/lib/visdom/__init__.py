@@ -127,7 +127,7 @@ def _opts2layout(opts, is3d=False,noScrub=False):
 
     if opts.get('stacked'):
         layout['barmode'] = 'stack' if opts.get('stacked') else 'group'
-    scrubed = _scrub_dict(layout)
+
     return scrubed
     if noScrub: return layout
     
@@ -515,7 +515,7 @@ class Visdom(object):
             'append': append,
         }, endpoint='update')
 
-    def scatter(self, X, Y=None, win=None, env=None, opts=None, update=None,aditionalData = None):
+    def scatter(self, X, Y=None, win=None, env=None, opts=None, update=None):
         """
         This function draws a 2D or 3D scatter plot. It takes in an `Nx2` or
         `Nx3` tensor `X` that specifies the locations of the `N` points in the
@@ -597,8 +597,6 @@ class Visdom(object):
 
                 if is3d:
                     _data['z'] = X.take(2, 1)[ind].tolist()
-                for key in aditionalData[k]:
-                    _data[key] = aditionalData[k][key]
 
                 data.append(_scrub_dict(_data))
 
@@ -609,7 +607,7 @@ class Visdom(object):
             'layout': _opts2layout(opts, is3d),
         })
 
-    def line(self, Y, X=None, win=None, env=None, opts=None, update=None,aditionalData = None):
+    def line(self, Y, X=None, win=None, env=None, opts=None, update=None):
         """
         This function draws a line plot. It takes in an `N` or `NxM` tensor
         `Y` that specifies the values of the `M` lines (that connect `N` points)
@@ -666,9 +664,9 @@ class Visdom(object):
             labels = np.arange(1, Y.shape[1] + 1)
             labels = np.tile(labels, (Y.shape[0], 1)).ravel(order='F')
 
-        return self.scatter(X=linedata, Y=labels, opts=opts, win=win, env=env,aditionalData=aditionalData)
+        return self.scatter(X=linedata, Y=labels, opts=opts, win=win, env=env)
 
-    def heatmap(self, X, win=None, env=None, opts=None,aditionalData = None):
+    def heatmap(self, X, win=None, env=None, opts=None):
         """
         This function draws a heatmap. It takes as input an `NxM` tensor `X`
         that specifies the value at each location in the heatmap.
@@ -706,8 +704,6 @@ class Visdom(object):
             'type': 'heatmap',
             'colorscale': opts.get('colormap'),
         }]
-        for key in aditionalData[k]:
-            data[0][key] = aditionalData[k][key]
 
         return self._send({
             'data': data,
@@ -716,7 +712,7 @@ class Visdom(object):
             'layout': _opts2layout(opts)
         })
 
-    def table(self,X, specops={},win=None, env=None, opts={},aditionalData = None):
+    def table(self,X, specops={},win=None, env=None, opts={}):
         """
         This function draws a heatmap. It takes as input an `NxM` tensor `X`
         that specifies the value at each location in the heatmap.
@@ -772,11 +768,11 @@ class Visdom(object):
             'data': data,
             'win': win,
             'eid': env,
-            'layout': _opts2layout(opts),
+            'layout': _opts2layout(opts,noScrub=True),
         }
         return self._send(msg)
 
-    def bar(self, X, Y=None, win=None,env=None, opts=None, aditionalData=None):
+    def bar(self, X, Y=None, win=None, env=None, opts=None):
         """
         This function draws a regular, stacked, or grouped bar plot. It takes as
         input an `N` or `NxM` tensor `X` that specifies the height of each
@@ -821,11 +817,7 @@ class Visdom(object):
                 'y': X.take(k, 1).tolist(),
                 'x': opts.get('rownames', Y.tolist()),
                 'type': 'bar',
-
             }
-            for key in aditionalData[k]:
-                _data[key] = aditionalData[k][key]
-
             if opts.get('legend'):
                 _data['name'] = opts['legend'][k]
             data.append(_data)
@@ -837,7 +829,7 @@ class Visdom(object):
             'layout': _opts2layout(opts)
         })
 
-    def histogram(self, X, win=None, env=None, opts=None, aditionalData = None):
+    def histogram(self, X, win=None, env=None, opts=None):
         """
         This function draws a histogram of the specified data. It takes as input
         an `N` tensor `X` that specifies the data of which to construct the
@@ -864,11 +856,10 @@ class Visdom(object):
             Y=linrange,
             opts=opts,
             win=win,
-            env=env,
-            aditionalData=aditionalData
+            env=env
         )
 
-    def boxplot(self, X, win=None, env=None, opts=None, aditionalData = None):
+    def boxplot(self, X, win=None, env=None, opts=None):
         """
         This function draws boxplots of the specified data. It takes as input
         an `N` or an `NxM` tensor `X` that specifies the `N` data values of
@@ -900,8 +891,7 @@ class Visdom(object):
                 _data['name'] = opts['legend'][k]
             else:
                 _data['name'] = 'column ' + str(k)
-            for key in aditionalData[k]:
-                _data[key] = aditionalData[k][key]
+
             data.append(_data)
 
         return self._send({
@@ -911,7 +901,7 @@ class Visdom(object):
             'layout': _opts2layout(opts)
         })
 
-    def _surface(self, X, stype, win=None, env=None, opts=None, aditionalData = None):
+    def _surface(self, X, stype, win=None, env=None, opts=None):
         """
         This function draws a surface plot. It takes as input an `NxM` tensor
         `X` that specifies the value at each location in the surface plot.
@@ -941,8 +931,6 @@ class Visdom(object):
             'type': stype,
             'colorscale': opts['colormap']
         }]
-        for key in aditionalData:
-            data[key] = aditionalData[key]
 
         return self._send({
             'data': data,
@@ -952,7 +940,7 @@ class Visdom(object):
                 opts, is3d=True if stype == 'surface' else False)
         })
 
-    def surf(self, X, win=None, env=None, opts=None, aditionalData = None):
+    def surf(self, X, win=None, env=None, opts=None):
         """
         This function draws a surface plot. It takes as input an `NxM` tensor
         `X` that specifies the value at each location in the surface plot.
@@ -966,9 +954,9 @@ class Visdom(object):
         - `opts.xmax`    : clip maximum value (`number`; default = `X:max()`)
         """
 
-        self._surface(X=X, stype='surface', opts=opts, win=win, env=env, aditionalData=aditionalData)
+        self._surface(X=X, stype='surface', opts=opts, win=win, env=env)
 
-    def contour(self, X, win=None, env=None, opts=None, aditionalData= None):
+    def contour(self, X, win=None, env=None, opts=None):
         """
         This function draws a contour plot. It takes as input an `NxM` tensor
         `X` that specifies the value at each location in the contour plot.
@@ -980,9 +968,9 @@ class Visdom(object):
         - `opts.xmax`    : clip maximum value (`number`; default = `X:max()`)
         """
 
-        self._surface(X=X, stype='contour', opts=opts, win=win, env=env, aditionalData=aditionalData)
+        self._surface(X=X, stype='contour', opts=opts, win=win, env=env)
 
-    def stem(self, X, Y=None, win=None, env=None, opts=None, aditionalData = None):
+    def stem(self, X, Y=None, win=None, env=None, opts=None):
         """
         This function draws a stem plot. It takes as input an `N` or `NxM`tensor
         `X` that specifies the values of the `N` points in the `M` time series.
@@ -1026,9 +1014,9 @@ class Visdom(object):
         opts['mode'] = 'lines'
         _assert_opts(opts)
 
-        return self.scatter(X=data, Y=labels, opts=opts, win=win, env=env, aditionalData=aditionalData)
+        return self.scatter(X=data, Y=labels, opts=opts, win=win, env=env)
 
-    def pie(self, X, win=None, env=None, opts=None, aditionalData = None):
+    def pie(self, X, win=None, env=None, opts=None):
         """
         This function draws a pie chart based on the `N` tensor `X`.
 
@@ -1037,41 +1025,27 @@ class Visdom(object):
         - `options.legend`: `table` containing legend names
         """
 
-        #X = np.squeeze(X)
-
-        #assert X.ndim == 1, 'X should be one-dimensional'
-        #assert np.all(np.greater_equal(X, 0)), \
-            #'X cannot contain negative values'
+        X = np.squeeze(X)
+        assert X.ndim == 1, 'X should be one-dimensional'
+        assert np.all(np.greater_equal(X, 0)), \
+            'X cannot contain negative values'
 
         opts = {} if opts is None else opts
         _assert_opts(opts)
-        data = []
 
-        for k in range(X.shape[0]):
-            _data = {
-                'values': X[k].tolist(),
-                'labels': opts.get('legend'),
-                'type': 'pie',
-            }
-            if aditionalData is not None:
-                for key in aditionalData[k]:
-                    _data[key] = aditionalData[k][key]
-            data.append(_data)
-        """
         data = [{
             'values': X.tolist(),
             'labels': opts.get('legend'),
             'type': 'pie',
         }]
-        """
         return self._send({
             'data': data,
             'win': win,
             'eid': env,
             'layout': _opts2layout(opts)
         })
-#TODO SEGUIR AGREGANDO
-    def mesh(self, X, Y=None, win=None, env=None, opts=None, aditionalData = None):
+
+    def mesh(self, X, Y=None, win=None, env=None, opts=None):
         """
         This function draws a mesh plot from a set of vertices defined in an
         `Nx2` or `Nx3` matrix `X`, and polygons defined in an optional `Mx2` or
@@ -1108,9 +1082,6 @@ class Visdom(object):
             'opacity': opts.get('opacity'),
             'type': 'mesh3d' if is3d else 'mesh',
         }]
-
-        for key in aditionalData[k]:
-            data[0][key] = aditionalData[k][key]
         return self._send({
             'data': data,
             'win': win,

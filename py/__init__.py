@@ -597,8 +597,8 @@ class Visdom(object):
 
                 if is3d:
                     _data['z'] = X.take(2, 1)[ind].tolist()
-                for key in aditionalData[k]:
-                    _data[key] = aditionalData[k][key]
+                for key in aditionalData[k-1]:
+                    _data[key] = aditionalData[k-1][key]
 
                 data.append(_scrub_dict(_data))
 
@@ -665,8 +665,9 @@ class Visdom(object):
         if Y.ndim == 2:
             labels = np.arange(1, Y.shape[1] + 1)
             labels = np.tile(labels, (Y.shape[0], 1)).ravel(order='F')
-
-        return self.scatter(X=linedata, Y=labels, opts=opts, win=win, env=env,aditionalData=aditionalData)
+        add = np.array(aditionalData)
+        add = add.ravel(order='F')
+        return self.scatter(X=linedata, Y=labels, opts=opts, win=win, env=env,aditionalData=add)
 
     def heatmap(self, X, win=None, env=None, opts=None,aditionalData = None):
         """

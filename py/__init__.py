@@ -604,8 +604,9 @@ class Visdom(object):
 
                 if is3d:
                     _data['z'] = X.take(2, 1)[ind].tolist()
-                for key in aditionalData[k - 1]:
-                    _data[key] = aditionalData[k - 1][key]
+                if len(aditionalData) > 0:
+                    for key in aditionalData[k - 1]:
+                        _data[key] = aditionalData[k - 1][key]
 
                 data.append(_scrub_dict(_data))
 
@@ -715,8 +716,10 @@ class Visdom(object):
             'type': 'heatmap',
             'colorscale': opts.get('colormap'),
         }]
-        for key in aditionalData[k]:
-            data[0][key] = aditionalData[k][key]
+        if len(aditionalData) > 0:
+
+            for key in aditionalData[k]:
+                data[0][key] = aditionalData[k][key]
 
         return self._send({
             'data': data,
@@ -833,8 +836,9 @@ class Visdom(object):
                 'type': 'bar',
 
             }
-            for key in aditionalData[k]:
-                _data[key] = aditionalData[k][key]
+            if len(aditionalData) > 0:
+                for key in aditionalData[k]:
+                    _data[key] = aditionalData[k][key]
 
             if opts.get('legend'):
                 _data['name'] = opts['legend'][k]
@@ -911,8 +915,9 @@ class Visdom(object):
                 _data['name'] = opts['legend'][k]
             else:
                 _data['name'] = 'column ' + str(k)
-            for key in aditionalData[k]:
-                _data[key] = aditionalData[k][key]
+            if len(aditionalData) > 0:
+                for key in aditionalData[k]:
+                    _data[key] = aditionalData[k][key]
             data.append(_data)
 
         return self._send({
@@ -952,8 +957,9 @@ class Visdom(object):
             'type': stype,
             'colorscale': opts['colormap']
         }]
-        for key in aditionalData:
-            data[key] = aditionalData[key]
+        if len(aditionalData) > 0:
+            for key in aditionalData[0]:
+                data[key] = aditionalData[key]
 
         return self._send({
             'data': data,
@@ -1067,7 +1073,7 @@ class Visdom(object):
                 'labels': opts.get('legend'),
                 'type': 'pie',
             }
-            if aditionalData is not None:
+            if len(aditionalData) > 0:
                 for key in aditionalData[k]:
                     _data[key] = aditionalData[k][key]
             data.append(_data)
@@ -1122,9 +1128,9 @@ class Visdom(object):
             'opacity': opts.get('opacity'),
             'type': 'mesh3d' if is3d else 'mesh',
         }]
-
-        for key in aditionalData[k]:
-            data[0][key] = aditionalData[k][key]
+        if len(aditionalData) > 0:
+            for key in aditionalData[k]:
+                data[0][key] = aditionalData[k][key]
         return self._send({
             'data': data,
             'win': win,

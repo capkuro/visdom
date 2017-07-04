@@ -98,8 +98,8 @@ class treeObj(object):
 
     def createTree(self):
         children = []
-        print("id {}, name {}".format(self._id,self._name))
-        print(self._files)
+        #print("id {}, name {}".format(self._id,self._name))
+        #print(self._files)
         for el in self._child:
             children.append(el.createTree())
         for el in self._files:
@@ -152,9 +152,9 @@ tornado_settings = {
 def serialize_env(state, eids):
     l = [i for i in eids if i in state]
     for i in l:
-        print(i)
+        #print(i)
         splitted = i.split("/")[:-1]
-        print(splitted)
+        #print(splitted)
         newpath = ""
         for el in splitted:
             newpath += el + "/"
@@ -174,7 +174,7 @@ def buildTree(path):
     {"id":"SAD","text":"Root node","children":[{"id":2,"text":"Child node 1","children":[{"id":8,"text":"Child node 1","children":[{"id":9,"text":"Child node 1","children":[{"id":10,"text":"Child node 1"}]}]}]},{"id":3,"text":"Child node 2","icon":"glyphicon glyphicon-file"}]},
     {"id":4,"text":"Hola","icon":"glyphicon glyphicon-file"}
     """
-    print(path)
+    #print(path)
     files = {}
     trees = []
     treeDir ={}
@@ -189,7 +189,7 @@ def buildTree(path):
             y = treeDir[root]
         for el in dr:
             id = root+el+"/"
-            print(id)
+            #print(id)
             aux = treeObj(id=id,name=el,type="Folder")
             treeDir[id] = aux
             y.addChild(treeDir[id])
@@ -198,17 +198,17 @@ def buildTree(path):
         for el in fl:
             files[y.getId()].append(el.replace('.json',""))
 
-        print("====files: {}".format(files))
+        #print("====files: {}".format(files))
         y.setFiles(files[y.getId()])
         if not (y.getId() in treeDir.keys()):
             trees.append(y)
-    print("Printing Tree Dir")
-    print(treeDir)
-    print("=========\n Printing tree recc")
-    trees[0].printRecc()
+    #print("Printing Tree Dir")
+    #print(treeDir)
+    #print("=========\n Printing tree recc")
+    #trees[0].printRecc()
 
     tree = trees[0].createTree()
-    print("=======TREEE CREATED==========")
+    #print("=======TREEE CREATED==========")
     return tree
 
 
@@ -219,7 +219,7 @@ class Application(tornado.web.Application):
         dirs = {}
         files = {}
         # reload state
-        dirs = buildTree(FLAGS.env_path)
+        #dirs = buildTree(FLAGS.env_path)
         ensure_dir_exists(FLAGS.env_path)
         l = [i for i in os.listdir(FLAGS.env_path) if '.json' in i]
         j = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(FLAGS.env_path)) for f in fn if '.json' in f]
@@ -505,13 +505,23 @@ def gather_envs2(state,filter):
     return sorted(items)
 
 class EnvHandler(BaseHandler):
+    test = 'hola'
     def initialize(self, state, subs):
         self.state = state
         self.subs = subs
+        self.eid = ''
+        #self.dirs = buildTree(FLAGS.env_path)
 
     def get(self, eid):
+        splitted = ''
         if '/' in eid:
             splitted = eid.split("/")[:-1]
+            splitted = splitted[0]
+            print("====HOLI=====")
+            print(splitted)
+            self.eid = splitted
+            FLAGS.dir = splitted
+
             newpath = ""
             for el in splitted:
                 newpath += el + "/"
@@ -519,10 +529,12 @@ class EnvHandler(BaseHandler):
             items = gather_envs2(self.state, newpath)
             print(len(items))
             active = items[0] if (items and eid not in items) else eid
+            #self.eid = items
         else:
             items = gather_envs(self.state)
             active = 'main' if eid not in items else eid
-        dir = buildTree(FLAGS.env_path)
+        dir = buildTree(FLAGS.env_path+'/'+splitted)
+        print(FLAGS.dir)
         self.render(
             'index.html',
             user=getpass.getuser(),
@@ -534,6 +546,9 @@ class EnvHandler(BaseHandler):
     def post(self, args):
         sid = tornado.escape.json_decode(tornado.escape.to_basestring(self.request.body))['sid']
         args = args.replace(FLAGS.env_path+"/","").replace(".json","")
+        #print("=====dir=====")
+        #print(FLAGS.dir)
+        #print("====Args====")
         print(args)
         load_env(self.state, args, self.subs[sid])
 
@@ -554,9 +569,9 @@ class IndexHandler(BaseHandler):
     def initialize(self, state):
         self.state = state
         self.dirs = buildTree(FLAGS.env_path)
-        print("========")
-        print(self.dirs)
-        print("///")
+        #print("========")
+        #print(self.dirs)
+        #print("///")
 
     def get(self, args, **kwargs):
         items = gather_envs(self.state)

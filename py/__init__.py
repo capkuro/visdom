@@ -718,8 +718,8 @@ class Visdom(object):
         }]
         if len(aditionalData) > 0:
 
-            for key in aditionalData[k]:
-                data[0][key] = aditionalData[k][key]
+            for key in aditionalData[0]:
+                data[0][key] = aditionalData[0][key]
 
         return self._send({
             'data': data,
